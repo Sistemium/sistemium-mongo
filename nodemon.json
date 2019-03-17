@@ -1,0 +1,10 @@
+{
+  "env": {
+    "DEBUG": "stm:*",
+    "MONGO_URL": "mng2.sistemium.net/test",
+    "DEBUG_NAMESPACE": "stm:mongo",
+    "ERROR_NAMESPACE": "stm:mongo:error",
+    "REST_PORT": "9999"
+  },
+  "ignore": ["static"]
+}
