@@ -11,6 +11,7 @@
   },
   "author": "Sistemium UAB",
   "license": "ISC",
+  "repository": "Sistemium/sistemium-mongo",
   "dependencies": {
     "@koa/cors": "^3.0.0",
     "koa": "^2.7.0",
