@@ -9,7 +9,7 @@ import { delHandler } from './Archive';
 
 const { debug } = log('rest');
 
-const PAGE_SIZE_HEADER = 'x-page-size';
+export const PAGE_SIZE_HEADER = 'x-page-size';
 export const OFFSET_HEADER = 'x-offset';
 export const PATCH_HEADER = 'x-patch';
 const WHERE_KEY = 'where:';

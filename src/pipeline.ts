@@ -1,6 +1,8 @@
 import lowerFirst from 'lodash/lowerFirst';
 
-export function toOneLookup(from, localFieldName, asName) {
+type Pipeline = object[];
+
+export function toOneLookup(from: string, localFieldName?: string, asName?: string): Pipeline {
   const as = asName || lowerFirst(from);
   const localField = localFieldName || `${as}Id`;
   return [
@@ -22,7 +24,7 @@ export function toOneLookup(from, localFieldName, asName) {
   ];
 }
 
-export function toOneOrZeroLookup(from, localFieldName, asName) {
+export function toOneOrZeroLookup(from: string, localFieldName?: string, asName?: string): Pipeline {
   const as = asName || lowerFirst(from);
   const localField = localFieldName || `${as}Id`;
   return [
@@ -35,17 +37,17 @@ export function toOneOrZeroLookup(from, localFieldName, asName) {
           as,
         },
     },
-    { $unwind: { path: `$${as}`, preserveNullAndEmptyArrays: true } },
+    {$unwind: {path: `$${as}`, preserveNullAndEmptyArrays: true}},
   ];
 }
 
-export function top1Lookup(from, foreignField, orderBy, as, filter = {}, localField = 'id') {
+export function top1Lookup(from:string, foreignField?: string, orderBy?: string, as?: string, filter: object = {}, localField: string = 'id'): Pipeline {
 
   return [
     {
       $lookup: {
         from,
-        let: { [foreignField]: `$${localField}` },
+        let: {[foreignField]: `$${localField}`},
         pipeline: [
           {
             $match: {
@@ -55,19 +57,19 @@ export function top1Lookup(from, foreignField, orderBy, as, filter = {}, localFi
               ...filter,
             },
           },
-          { $sort: orderBy },
-          { $limit: 1 },
+          {$sort: orderBy},
+          {$limit: 1},
         ],
         as,
       },
     },
-    { $unwind: { path: `$${as}`, preserveNullAndEmptyArrays: true } },
+    {$unwind: {path: `$${as}`, preserveNullAndEmptyArrays: true}},
   ];
 
 }
 
 
-export function toMany(from, foreignField, as = `${from}s`, localField = 'id') {
+export function toMany(from: string, foreignField: string, as: string = `${from}s`, localField: string = 'id'): Pipeline {
   return [
     {
       $lookup: {
@@ -82,12 +84,12 @@ export function toMany(from, foreignField, as = `${from}s`, localField = 'id') {
 }
 
 
-export function toManyFiltered(from, foreignField, as, filter = {}, localField = 'id') {
+export function toManyFiltered(from:string, foreignField?: string, orderBy?: string, as?: string, filter: object = {}, localField: string = 'id'): Pipeline {
 
-  return {
+  return [{
     $lookup: {
       from,
-      let: { [foreignField]: `$${localField}` },
+      let: {[foreignField]: `$${localField}`},
       pipeline: [
         {
           $match: {
@@ -100,6 +102,6 @@ export function toManyFiltered(from, foreignField, as, filter = {}, localField =
       ],
       as,
     },
-  };
+  }];
 
 }

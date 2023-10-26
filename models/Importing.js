@@ -1,5 +1,5 @@
-import ModelSchema from '../lib/schema';
-import assert from '../lib/assert';
+import ModelSchema from '../src/schema';
+import assert from '../src/assert';
 
 const Importing = new ModelSchema({
   collection: 'Importing',
