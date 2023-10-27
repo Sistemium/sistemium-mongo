@@ -6,6 +6,8 @@
   "compilerOptions": {
     "allowJs": true,
     "esModuleInterop": true,
+    "module": "commonjs",
+    "target": "es2022",
     "declaration": true,
     "outDir": "lib"
   }
