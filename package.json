@@ -7,6 +7,7 @@
   ],
   "scripts": {
     "build": "rm -rf lib; tsc",
+    "serve": "tsc-watch",
     "lint": "eslint src"
   },
   "author": "Sistemium UAB",
@@ -36,6 +37,7 @@
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.26.0",
     "esm": "^3.2.25",
+    "tsc-watch": "^6.0.4",
     "typescript": "^5.2.2"
   }
 }
