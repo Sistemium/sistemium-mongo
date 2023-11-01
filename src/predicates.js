@@ -43,8 +43,13 @@ export function whereToFilter(where, schema) {
 }
 
 export function queryToFilter(query, schema) {
-  const keys = Object.keys(schema.tree || schema);
-  return lo.mapValues(lo.pick(query, keys), x => {
+  const tree = schema.tree || schema || {};
+  const queryKeys = Object.keys(query || {})
+    .filter(name => {
+      const [field] = name.match(/^[^.]+/);
+      return !!tree[field];
+    });
+  return lo.mapValues(lo.pick(query, queryKeys), x => {
     if (Array.isArray(x)) {
       return { $in: x };
     }
