@@ -15,6 +15,10 @@
   "repository": "Sistemium/sistemium-mongo",
   "dependencies": {
     "@koa/cors": "^3.3.0",
+    "@types/koa": "^2.13.10",
+    "@types/koa__router": "^12.0.2",
+    "@types/koa-bodyparser": "^4.3.11",
+    "@types/lodash": "^4.14.200",
     "async": "^3.2.4",
     "koa": "^2.14.2",
     "koa-bodyparser": "^4.4.1",
@@ -24,14 +28,10 @@
     "mongoose": "7.6.1",
     "qs": "^6.11.2",
     "sistemium-debug": "^1.1.2",
-    "@types/koa": "^2.13.10",
-    "@types/koa__router": "^12.0.2",
-    "@types/koa-bodyparser": "^4.3.11",
-    "@types/koa-logger": "^3.1.4",
-    "@types/lodash": "^4.14.200",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@types/async": "^3.2.23",
     "@types/node": "^20.8.9",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.2.1",
