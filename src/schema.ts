@@ -32,7 +32,7 @@ export interface ModelSchemaConfig {
   tsType?: TSType
 }
 
-type BaseItem = Record<string, any>
+export type BaseItem = Record<string, any>
 
 export type MongoModel = ModelSchema & Model<any>
 
@@ -50,8 +50,8 @@ export default class ModelSchema {
     return this.schema;
   }
 
-  model() {
-    return model(this.name, this.schema);
+  model(): MongoModel {
+    return model(this.name, this.schema) as undefined;
   }
 
   constructor(config: ModelSchemaConfig) {
@@ -94,7 +94,6 @@ export default class ModelSchema {
 
     // @ts-ignore
     schema.statics = {
-      // @ts-ignore
       merge: this.merge,
       mergeIfChanged: this.mergeIfChanged,
       mergeIfNotMatched: this.mergeIfNotMatched,
@@ -102,7 +101,7 @@ export default class ModelSchema {
       findAll: this.findAll,
       ...statics,
       // @ts-ignore
-      ownFields: omitInternal(schema.tree),
+      ownFields: omitInternal(schema.tree as BaseItem) as BaseItem,
     };
 
     const pk = mapValues(keyBy(mergeBy), (): 1 | -1 => 1);
