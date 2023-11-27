@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+import type { Model } from 'mongoose';
 import each from 'lodash/each';
 import omit from 'lodash/omit';
 import fpOmitBy from 'lodash/fp/omitBy';
@@ -9,33 +10,51 @@ import keyBy from 'lodash/keyBy';
 import log from 'sistemium-debug';
 import { v4 as uuid } from 'uuid';
 import lo from 'lodash';
-import mapSeries from 'async/mapSeries';
+import { mapSeries } from 'async';
 
 export const PAGE_SIZE_HEADER = 'x-page-size';
 
 const { debug } = log('schema');
 
 const INTERNAL_FIELDS_RE = /^_/;
-const omitInternal = fpOmitBy((val, key) => INTERNAL_FIELDS_RE.test(key));
-const pickUndefined = obj => mapValues(pickBy(obj, val => val === undefined), () => 1);
+const omitInternal = fpOmitBy((_val, key) => INTERNAL_FIELDS_RE.test(key));
+const pickUndefined = (obj: BaseItem) => mapValues(pickBy(obj, val => val === undefined), () => 1);
+
+export type TSType = 'timestamp' | 'date'
+
+export interface ModelSchemaConfig {
+  schema: Record<string, any>
+  collection: string
+  mongoSchema?: Schema,
+  statics?: Record<string, any>
+  indexes?: Record<string, 1 | -1>[]
+  mergeBy?: string[]
+  tsType?: TSType
+}
+
+type BaseItem = Record<string, any>
+
+export type MongoModel = ModelSchema & Model<any>
+
+export type TestFn = (item: BaseItem) => boolean
+export type ConditionFn = (item: BaseItem, updated: BaseItem) => boolean
 
 export default class ModelSchema {
 
-  /**
-   * @returns {Schema}
-   */
+  schema: Schema & { tree: BaseItem, get(t: 'tsType'): TSType }
+  name: string
+  getManyPipeline?: () => BaseItem[]
+  ownFields: BaseItem
+
   mongooseSchema() {
     return this.schema;
   }
 
-  /**
-   * @returns {Model}
-   */
   model() {
     return model(this.name, this.schema);
   }
 
-  constructor(config) {
+  constructor(config: ModelSchemaConfig) {
 
     const {
       collection,
@@ -52,7 +71,7 @@ export default class ModelSchema {
     // Object.assign(schemaConfig, );
 
     const schema = mongoSchema || new Schema(schemaConfig);
-    schema.options.collection = collection;
+    schema.set('collection', collection);
     schema.add({
       ts: Date,
       id: String,
@@ -64,54 +83,57 @@ export default class ModelSchema {
 
     schema.set('toJSON', {
       virtuals: true,
-      transform(doc, ret) {
+      transform(_doc, ret) {
         delete ret._id;
         delete ret.__v;
       },
     });
 
+    // @ts-ignore
     schema.set('tsType', tsType || 'date');
 
+    // @ts-ignore
     schema.statics = {
+      // @ts-ignore
       merge: this.merge,
       mergeIfChanged: this.mergeIfChanged,
       mergeIfNotMatched: this.mergeIfNotMatched,
       normalizeItem: this.normalizeItem,
       findAll: this.findAll,
       ...statics,
+      // @ts-ignore
       ownFields: omitInternal(schema.tree),
     };
 
-    const pk = mapValues(keyBy(mergeBy), () => 1);
+    const pk = mapValues(keyBy(mergeBy), (): 1 | -1 => 1);
     debug(collection, pk);
     schema.index(pk, { unique: true });
 
     indexes.push({ ts: -1 });
-    each(schemaConfig, (type, key) => key.match(/.+Id$/) && indexes.push({ [key]: 1 }));
+    each(schemaConfig, (_type, key) => key.match(/.+Id$/) && indexes.push({ [key]: 1 }));
 
     each(indexes, index => schema.index(index));
 
+    // @ts-ignore
     this.schema = schema;
+    // @ts-ignore
     schema.statics.mergeBy = mergeBy;
 
   }
 
-  normalizeItem(item, defaults = {}, overrides = {}) {
+  normalizeItem(item: BaseItem, defaults = {}, overrides = {}) {
     const { schema: { tree } } = this;
     const all = mapValues(
       tree,
-      (keySchema, key) => ifUndefined(overrides[key], ifUndefined(item[key], defaults[key])),
+      (_keySchema, key) => ifUndefined(overrides[key], ifUndefined(item[key], defaults[key])),
     );
     return omitInternal(all);
   }
 
   /**
    * Merges an array of collection data into the model
-   * @param {Array} items
-   * @param {Object} [options]
-   * @returns {Promise<Array>}
    */
-  async merge(items, options = {}) {
+  async merge(this: MongoModel, items: BaseItem[], options: BaseItem = {}) {
 
     const ids = [];
     const { patch = false } = options;
@@ -143,13 +165,10 @@ export default class ModelSchema {
 
   /**
    * Merges an array of collection data into the model
-   * @param {Array} items
-   * @param {Boolean} [upsert]
-   * @returns {Promise<Array>}
    */
-  async mergeIfChanged(items, upsert = true) {
+  async mergeIfChanged(this: MongoModel, items: BaseItem[], upsert: boolean = true): Promise<(string | null)[]> {
 
-    const merged = await mapSeries(items, async item => {
+    const merged = await mapSeries(items, async (item: BaseItem) => {
 
       const { id = uuid() } = item;
 
@@ -181,12 +200,8 @@ export default class ModelSchema {
 
   /**
    * Merges an array of collection data into the model
-   * @param {Array} items
-   * @param {Function} [upsertFn]
-   * @param {Function} [conditionsFn]
-   * @returns {Promise<Array>}
    */
-  async mergeIfNotMatched(items, upsertFn = () => true, conditionsFn = () => true) {
+  async mergeIfNotMatched(this: MongoModel, items: BaseItem[], upsertFn: TestFn = () => true, conditionsFn: ConditionFn = () => true): Promise<any> {
 
     const operations = items.map(item => {
 
@@ -248,9 +263,9 @@ export default class ModelSchema {
 
   }
 
-  async findAll(filters, options = {}) {
+  async findAll(this: MongoModel, filters: BaseItem, options: BaseItem = {}) {
 
-    const { headers: { [PAGE_SIZE_HEADER]: pageSize } = {} } = options;
+    const { headers: { [PAGE_SIZE_HEADER]: pageSize } = {} as BaseItem } = options;
     const pipeline = [];
     const { schema } = this;
 
@@ -263,7 +278,7 @@ export default class ModelSchema {
       pipeline.push(...getManyPipeline());
     }
 
-    const $project = {
+    const $project: BaseItem = {
       ...lo.mapValues(schema.tree, () => true),
       _id: false,
     };
@@ -292,7 +307,7 @@ export default class ModelSchema {
 
 }
 
-function $updateOne(item, id, upsert = true, patch = false) {
+function $updateOne(item: BaseItem, id: string, upsert = true, patch = false) {
 
   const cts = new Date();
   const { mergeBy } = this;
@@ -334,10 +349,10 @@ function $updateOne(item, id, upsert = true, patch = false) {
 
 }
 
-function $currentDate() {
+function $currentDate(this: MongoModel) {
   return { ts: { $type: this.schema.get('tsType') } };
 }
 
-function ifUndefined(val1, val2) {
+function ifUndefined(val1: any, val2: any): any {
   return val1 === undefined ? val2 : val1;
 }
