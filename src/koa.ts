@@ -3,6 +3,7 @@ import bodyParser from 'koa-bodyparser';
 import log from 'sistemium-debug';
 import morgan from 'koa-morgan';
 import cors from '@koa/cors';
+import Router from '@koa/router';
 import * as mongo from './mongoose';
 
 const {
@@ -17,11 +18,17 @@ const {
 
 export { morgan };
 
+interface KoaApiConfig {
+  port?: number
+  morganFormat?: string
+  api: Router
+}
+
 export default class KoaApi {
 
-  constructor(props) {
+  app = new Koa()
 
-    this.app = new Koa();
+  constructor(props: KoaApiConfig) {
 
     const {
       api,
@@ -40,6 +47,7 @@ export default class KoaApi {
 
     this.app
       .use(async (ctx, next) => {
+        // @ts-ignore
         ctx.req.koaState = ctx.state;
         await next();
       })
