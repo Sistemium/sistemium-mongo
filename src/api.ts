@@ -1,11 +1,14 @@
 import log from 'sistemium-debug';
 import lo from 'lodash';
 import qs from 'qs';
-import mapSeries from 'async/mapSeries';
+import { mapSeries } from 'async';
 
 import * as predicates from './predicates';
 import * as util from './util';
 import { delHandler } from './Archive';
+import { Context } from 'koa';
+import { BaseItem, MongoModel } from './schema';
+import Router from '@koa/router';
 
 const { debug } = log('rest');
 
@@ -14,9 +17,9 @@ export const OFFSET_HEADER = 'x-offset';
 export const PATCH_HEADER = 'x-patch';
 const WHERE_KEY = 'where:';
 
-export function getHandler(model) {
+export function getHandler(model: MongoModel) {
 
-  return async ctx => {
+  return async (ctx: Context) => {
 
     const {
       params: { id },
@@ -38,14 +41,14 @@ export function getHandler(model) {
   };
 }
 
-export function getManyHandler(model) {
-  return async ctx => {
+export function getManyHandler(model: MongoModel) {
+  return async (ctx: Context) => {
 
     const {
       path,
       query: plainQuery,
     } = ctx;
-    const query = qs.parse(plainQuery);
+    const query = qs.parse(plainQuery as BaseItem);
     const pageSize = queryOrHeader(ctx, PAGE_SIZE_HEADER) || '10';
     const offset = queryOrHeader(ctx, OFFSET_HEADER);
 
@@ -107,8 +110,8 @@ export function getManyHandler(model) {
   };
 }
 
-export function postHandler(model) {
-  return async ctx => {
+export function postHandler(model: MongoModel) {
+  return async (ctx: Context) => {
 
     const {
       request: { body },
@@ -124,7 +127,7 @@ export function postHandler(model) {
 
     const { authId: creatorAuthId } = account || {};
     const data = isArray ? body : [id ? {
-      ...body,
+      ...(body as BaseItem),
       id,
     } : body];
     const normalized = data.map(item => model.normalizeItem(item, {}, { creatorAuthId }));
@@ -140,7 +143,7 @@ export function postHandler(model) {
       if (mergeById(model)) {
         return $in.length ? model.findAll({ id: { $in } }) : [];
       }
-      return mapSeries(data, async item => {
+      return mapSeries(data, async (item: BaseItem) => {
         const keys = lo.pick(item, model.mergeBy);
         const [res] = await model.findAll(keys);
         return res;
@@ -151,9 +154,9 @@ export function postHandler(model) {
 
 }
 
-export function patchHandler(model) {
+export function patchHandler(model: MongoModel) {
 
-  return async ctx => {
+  return async (ctx: Context) => {
 
     const {
       params: { id },
@@ -185,7 +188,7 @@ export function patchHandler(model) {
   };
 }
 
-export function defaultRoutes(router, models = []) {
+export function defaultRoutes(router: Router, models: MongoModel[] = []) {
 
   models.forEach(model => {
 
@@ -204,11 +207,11 @@ export function defaultRoutes(router, models = []) {
 
 }
 
-function queryOrHeader(ctx, headerName) {
+function queryOrHeader(ctx: Context, headerName: string) {
   return ctx.query[`${headerName}:`] || ctx.header[headerName];
 }
 
-function mergeById(model) {
+function mergeById(model: MongoModel) {
   const { mergeBy } = model;
   return !mergeBy
     || (mergeBy.length === 1 && mergeBy[0] === 'id');

@@ -45,6 +45,9 @@ export default class ModelSchema {
   name: string
   getManyPipeline?: () => BaseItem[]
   ownFields: BaseItem
+  mergeBy: string[]
+  fetchPaged: any
+  rolesFilter?(state: BaseItem): BaseItem[]
 
   mongooseSchema() {
     return this.schema;
