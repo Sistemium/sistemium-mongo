@@ -32,6 +32,8 @@
   },
   "devDependencies": {
     "@types/async": "^3.2.23",
+    "@types/koa__cors": "^4.0.3",
+    "@types/koa-morgan": "^1.0.8",
     "@types/node": "^20.8.9",
     "@types/uuid": "^9.0.7",
     "eslint": "^6.8.0",
