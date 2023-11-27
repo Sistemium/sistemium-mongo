@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "build": "rm -rf lib; tsc",
-    "serve": "tsc-watch",
+    "watch": "tsc-watch",
     "lint": "eslint src"
   },
   "author": "Sistemium UAB",
@@ -33,6 +33,7 @@
   "devDependencies": {
     "@types/async": "^3.2.23",
     "@types/node": "^20.8.9",
+    "@types/uuid": "^9.0.7",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.26.0",
