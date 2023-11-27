@@ -1,6 +1,7 @@
 import log from 'sistemium-debug';
+import { Context } from 'koa';
 
-import ModelSchema from './schema';
+import ModelSchema, { BaseItem, MongoModel } from './schema';
 
 const { debug } = log('archive');
 
@@ -16,15 +17,15 @@ const schema = new ModelSchema({
 
 export const Archive = schema.model();
 
-async function archiveCreate(data, name, creatorAuthId) {
+async function archiveCreate(data: BaseItem, name: string, creatorAuthId?: string) {
   const $set = { name, data, creatorAuthId };
   const $currentDate = { ts: { $type: 'timestamp' } };
   return Archive.updateOne({ id: data.id, name }, { $set, $currentDate }, { upsert: true });
 }
 
-export function delHandler(model) {
+export function delHandler(model: MongoModel) {
 
-  return async ctx => {
+  return async (ctx: Context) => {
 
     const { path, params: { id }, state: { account } } = ctx;
 
@@ -38,7 +39,7 @@ export function delHandler(model) {
 
     ctx.assert(data, 404);
 
-    await archiveCreate(data, model.collection.name || model.collection, creatorAuthId);
+    await archiveCreate(data, model.collection.name || model.collection as undefined, creatorAuthId);
     await model.deleteOne({ id });
 
     ctx.body = '';
