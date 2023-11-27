@@ -1,4 +1,5 @@
 import * as mongo from 'mongodb';
+import { Timestamp } from 'mongodb';
 
 export default mongo;
 
@@ -7,7 +8,7 @@ const OFFSET_OLD = /^1-(\d{17})-(\d+)$/;
 
 const OFFSET_ZERO = new mongo.Timestamp({ t: 0, i: 0 });
 
-export function offsetToTimestamp(offset) {
+export function offsetToTimestamp(offset: string): Timestamp {
 
   if (offset === '*') {
     return OFFSET_ZERO;
@@ -27,7 +28,7 @@ export function offsetToTimestamp(offset) {
 
 }
 
-export function timestampToOffset(ts) {
+export function timestampToOffset(ts: Timestamp): string {
   const offset = `2-${ts.toString()}`;
   if (!OFFSET_RE.test(offset)) {
     throw new Error(`Invalid timestamp "${ts}"`);
