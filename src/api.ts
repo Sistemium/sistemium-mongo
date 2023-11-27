@@ -64,7 +64,7 @@ export function getManyHandler(model: MongoModel) {
 
     if (offset && offset !== '*') {
       try {
-        filters.ts = { $gt: util.offsetToTimestamp(offset) };
+        filters.ts = { $gt: util.offsetToTimestamp(offset as string) };
       } catch (e) {
         ctx.throw(400, e);
       }
