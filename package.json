@@ -2,6 +2,7 @@
   "name": "sistemium-mongo",
   "version": "1.19.0",
   "description": "Sistemium Mongo helpers",
+  "main": "lib/index",
   "files": [
     "lib"
   ],

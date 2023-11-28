@@ -3,12 +3,8 @@ import log from 'sistemium-debug';
 
 export { mongoose, Schema, model };
 
-export type { Model, Connection } from 'mongoose';
-
 const { debug } = log('mongoose');
-
 const mongoUrl = process.env.MONGO_URL;
-
 const MONGO_OPTIONS = {};
 
 if (process.env.MONGOOSE_DEBUG) {
