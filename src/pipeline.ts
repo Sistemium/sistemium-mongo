@@ -1,6 +1,8 @@
 import lowerFirst from 'lodash/lowerFirst';
+import type { PipelineStage } from 'mongoose';
 
-type Pipeline = object[];
+type Pipeline = PipelineStage[];
+type OrderBy = Record<string, 1 | -1>
 
 export function toOneLookup(from: string, localFieldName?: string, asName?: string): Pipeline {
   const as = asName || lowerFirst(from);
@@ -37,17 +39,19 @@ export function toOneOrZeroLookup(from: string, localFieldName?: string, asName?
           as,
         },
     },
-    {$unwind: {path: `$${as}`, preserveNullAndEmptyArrays: true}},
+    { $unwind: { path: `$${as}`, preserveNullAndEmptyArrays: true } },
   ];
 }
 
-export function top1Lookup(from:string, foreignField?: string, orderBy?: string, as?: string, filter: object = {}, localField: string = 'id'): Pipeline {
+export function top1Lookup(from: string, foreignField: string, orderBy: OrderBy = { ts: -1 }, asName?: string, filter: object = {}, localField: string = 'id'): Pipeline {
+
+  const as = asName || lowerFirst(from);
 
   return [
     {
       $lookup: {
         from,
-        let: {[foreignField]: `$${localField}`},
+        let: { [foreignField]: `$${localField}` },
         pipeline: [
           {
             $match: {
@@ -57,13 +61,13 @@ export function top1Lookup(from:string, foreignField?: string, orderBy?: string,
               ...filter,
             },
           },
-          {$sort: orderBy},
-          {$limit: 1},
+          { $sort: orderBy },
+          { $limit: 1 },
         ],
         as,
       },
     },
-    {$unwind: {path: `$${as}`, preserveNullAndEmptyArrays: true}},
+    { $unwind: { path: `$${as}`, preserveNullAndEmptyArrays: true } },
   ];
 
 }
@@ -84,12 +88,12 @@ export function toMany(from: string, foreignField: string, as: string = `${from}
 }
 
 
-export function toManyFiltered(from:string, foreignField?: string, orderBy?: string, as?: string, filter: object = {}, localField: string = 'id'): Pipeline {
+export function toManyFiltered(from: string, foreignField?: string, orderBy?: OrderBy, as?: string, filter: object = {}, localField: string = 'id'): Pipeline {
 
   return [{
     $lookup: {
       from,
-      let: {[foreignField]: `$${localField}`},
+      let: { [foreignField]: `$${localField}` },
       pipeline: [
         {
           $match: {
