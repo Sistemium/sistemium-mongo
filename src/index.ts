@@ -6,5 +6,11 @@ export * from './util';
 export { default as assert } from './assert';
 
 export type { Model, Connection } from 'mongoose';
-export type { ChangeStreamDocument } from 'mongodb';
+export type {
+  ChangeStreamDocument,
+  ChangeStreamUpdateDocument,
+  ChangeStreamCreateDocument,
+  ChangeStreamDeleteDocument,
+  ChangeStreamReplaceDocument
+} from 'mongodb';
 export type { MongoModel, ModelSchemaConfig } from './schema';

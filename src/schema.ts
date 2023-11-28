@@ -34,14 +34,14 @@ export interface ModelSchemaConfig {
 
 export type BaseItem = Record<string, any>
 
-export type MongoModel = ModelSchema & Model<any>
+export type MongoModel<T = any> = ModelSchema<T> & Model<T>
 
 export type TestFn = (item: BaseItem) => boolean
 export type ConditionFn = (item: BaseItem, updated: BaseItem) => boolean
 
-export default class ModelSchema {
+export default class ModelSchema<T = any> {
 
-  schema: Schema & { tree: BaseItem, get(t: 'tsType'): TSType }
+  schema: Schema<T> & { tree: BaseItem, get(t: 'tsType'): TSType }
   name: string
   getManyPipeline?: () => BaseItem[]
   ownFields: BaseItem
@@ -49,12 +49,12 @@ export default class ModelSchema {
   fetchPaged: any
   rolesFilter?(state: BaseItem): BaseItem[]
 
-  mongooseSchema() {
+  mongooseSchema(): Schema<T> {
     return this.schema;
   }
 
-  model(): MongoModel {
-    return model(this.name, this.schema) as undefined;
+  model(): MongoModel<T> {
+    return model<T>(this.name, this.schema) as undefined;
   }
 
   constructor(config: ModelSchemaConfig) {
@@ -265,7 +265,7 @@ export default class ModelSchema {
 
   }
 
-  async findAll(this: MongoModel, filters: BaseItem, options: BaseItem = {}) {
+  async findAll(this: MongoModel, filters: BaseItem, options: BaseItem = {}): Promise<T[]> {
 
     const { headers: { [PAGE_SIZE_HEADER]: pageSize } = {} as BaseItem } = options;
     const pipeline = [];
