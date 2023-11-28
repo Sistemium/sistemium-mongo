@@ -35,7 +35,7 @@ export interface ModelSchemaConfig {
 
 export type BaseItem = Record<string, any>
 export type BaseT<T> = T & { ts: string | Timestamp, cts: Date, id: string }
-export type MongoModel<T = BaseItem> = ModelSchema<BaseT<T>> & Model<BaseT<T>>
+export type MongoModel<T = any> = ModelSchema<BaseT<T>> & Model<BaseT<T>>
 
 export type TestFn = (item: BaseItem) => boolean
 export type ConditionFn = (item: BaseItem, updated: BaseItem) => boolean
