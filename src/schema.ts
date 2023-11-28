@@ -11,6 +11,7 @@ import log from 'sistemium-debug';
 import { v4 as uuid } from 'uuid';
 import lo from 'lodash';
 import { mapSeries } from 'async';
+import { Timestamp } from 'mongodb';
 
 export const PAGE_SIZE_HEADER = 'x-page-size';
 
@@ -33,15 +34,15 @@ export interface ModelSchemaConfig {
 }
 
 export type BaseItem = Record<string, any>
-
-export type MongoModel<T = any> = ModelSchema<T> & Model<T>
+export type BaseT<T> = T & { ts: string | Timestamp, cts: Date, id: string }
+export type MongoModel<T = BaseItem> = ModelSchema<BaseT<T>> & Model<BaseT<T>>
 
 export type TestFn = (item: BaseItem) => boolean
 export type ConditionFn = (item: BaseItem, updated: BaseItem) => boolean
 
-export default class ModelSchema<T = any> {
+export default class ModelSchema<T = BaseItem> {
 
-  schema: Schema<T> & { tree: BaseItem, get(t: 'tsType'): TSType }
+  schema: Schema<BaseT<T>> & { tree: BaseItem, get(t: 'tsType'): TSType }
   name: string
   getManyPipeline?: () => BaseItem[]
   ownFields: BaseItem
@@ -49,7 +50,7 @@ export default class ModelSchema<T = any> {
   fetchPaged: any
   rolesFilter?(state: BaseItem): BaseItem[]
 
-  mongooseSchema(): Schema<T> {
+  mongooseSchema(): Schema<BaseT<T>> {
     return this.schema;
   }
 
@@ -265,7 +266,7 @@ export default class ModelSchema<T = any> {
 
   }
 
-  async findAll(this: MongoModel, filters: BaseItem, options: BaseItem = {}): Promise<T[]> {
+  async findAll(this: MongoModel, filters: BaseItem, options: BaseItem = {}): Promise<BaseT<T>[]> {
 
     const { headers: { [PAGE_SIZE_HEADER]: pageSize } = {} as BaseItem } = options;
     const pipeline = [];
