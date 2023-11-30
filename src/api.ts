@@ -42,7 +42,7 @@ export function getHandler(model: MongoModel) {
 }
 
 export function getManyHandler(model: MongoModel) {
-  return async (ctx: Context) => {
+  return async (ctx: Context & { state: Record<string, any> }) => {
 
     const {
       path,
@@ -74,7 +74,7 @@ export function getManyHandler(model: MongoModel) {
     const allFilters = lo.filter([
       rolesFilter && rolesFilter(ctx.state),
       filters,
-      // ...(ctx.state.filters || []),
+      ...(ctx.state.filters || []),
     ]);
 
     debug('GET', path, allFilters);
