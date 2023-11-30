@@ -25,8 +25,8 @@
     "koa-bodyparser": "^4.4.1",
     "koa-morgan": "^1.0.1",
     "lodash": "^4.17.21",
-    "mongodb": "^5.9.0",
-    "mongoose": "7.6.1",
+    "mongodb": "^4.17.1",
+    "mongoose": "6.12.3",
     "qs": "^6.11.2",
     "sistemium-debug": "^1.1.2",
     "uuid": "^9.0.1"
