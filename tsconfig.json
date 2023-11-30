@@ -7,7 +7,7 @@
     "allowJs": true,
     "esModuleInterop": true,
     "module": "commonjs",
-    "target": "es2022",
+    "target": "es2019",
     "declaration": true,
     "outDir": "lib"
   }
