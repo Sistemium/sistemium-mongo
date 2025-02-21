@@ -1,6 +1,6 @@
 {
   "name": "sistemium-mongo",
-  "version": "1.19.8",
+  "version": "1.20.0",
   "description": "Sistemium Mongo helpers",
   "main": "lib/index",
   "files": [
