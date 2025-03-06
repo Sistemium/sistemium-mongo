@@ -35,12 +35,12 @@ export interface ModelSchemaConfig {
 
 export type BaseItem = Record<string, any>
 export type BaseT<T> = T & { ts: string | Timestamp, cts: Date, id: string }
-export type MongoModel<T = any> = ModelSchema<BaseT<T>> & Model<BaseT<T>>
+export type MongoModel<T = any> = Model<BaseT<T>> & ModelSchema<BaseT<T>>
 
 export type TestFn = (item: BaseItem) => boolean
 export type ConditionFn = (item: BaseItem, updated: BaseItem) => boolean
 
-export default class ModelSchema<T = BaseItem> {
+export default class ModelSchema<T = BaseT<BaseItem>> {
 
   schema: Schema<BaseT<T>> & { tree: BaseItem, get(t: 'tsType'): TSType }
   name: string
@@ -55,8 +55,7 @@ export default class ModelSchema<T = BaseItem> {
   }
 
   model(): MongoModel<T> {
-    // @ts-ignore
-    return model<T>(this.name, this.schema) as undefined;
+    return model<T>(this.name, this.schema) as unknown as MongoModel<T>;
   }
 
   constructor(config: ModelSchemaConfig) {
