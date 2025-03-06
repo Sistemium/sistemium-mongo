@@ -55,6 +55,7 @@ export default class ModelSchema<T = BaseItem> {
   }
 
   model(): MongoModel<T> {
+    // @ts-ignore
     return model<T>(this.name, this.schema) as undefined;
   }
 
@@ -136,7 +137,7 @@ export default class ModelSchema<T = BaseItem> {
   /**
    * Merges an array of collection data into the model
    */
-  async merge(this: MongoModel, items: BaseItem[], options: BaseItem = {}) {
+  async merge(this: MongoModel<T>, items: BaseItem[], options: BaseItem = {}) {
 
     const ids = [];
     const { patch = false } = options;
@@ -169,7 +170,7 @@ export default class ModelSchema<T = BaseItem> {
   /**
    * Merges an array of collection data into the model
    */
-  async mergeIfChanged(this: MongoModel, items: BaseItem[], upsert: boolean = true): Promise<(string | null)[]> {
+  async mergeIfChanged(this: MongoModel<T>, items: BaseItem[], upsert: boolean = true): Promise<(string | null)[]> {
 
     const merged = await mapSeries(items, async (item: BaseItem) => {
 
@@ -204,7 +205,7 @@ export default class ModelSchema<T = BaseItem> {
   /**
    * Merges an array of collection data into the model
    */
-  async mergeIfNotMatched(this: MongoModel, items: BaseItem[], upsertFn: TestFn = () => true, conditionsFn: ConditionFn = () => true): Promise<any> {
+  async mergeIfNotMatched(this: MongoModel<T>, items: BaseItem[], upsertFn: TestFn = () => true, conditionsFn: ConditionFn = () => true): Promise<any> {
 
     const operations = items.map(item => {
 
@@ -266,7 +267,10 @@ export default class ModelSchema<T = BaseItem> {
 
   }
 
-  async findAll(this: MongoModel, filters: BaseItem, options: BaseItem = {}): Promise<BaseT<T>[]> {
+  async find(filters: BaseItem, project?: BaseItem | null, options?: BaseItem): Promise<BaseT<T>[]>
+  // @ts-ignore
+
+  async findAll(this: MongoModel<T>, filters: BaseItem, options: BaseItem = {}): Promise<BaseT<T>[]> {
 
     const { headers: { [PAGE_SIZE_HEADER]: pageSize } = {} as BaseItem } = options;
     const pipeline = [];
