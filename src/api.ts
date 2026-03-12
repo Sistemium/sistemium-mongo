@@ -7,7 +7,8 @@ import * as predicates from './predicates';
 import * as util from './util';
 import { delHandler } from './Archive';
 import { Context } from 'koa';
-import { BaseItem, MongoModel } from './schema';
+import { BaseItem, MongoModel, SORT_HEADER, parseSortHeader } from './schema';
+export { SORT_HEADER, parseSortHeader };
 import Router from '@koa/router';
 
 const { debug } = log('rest');
@@ -15,6 +16,7 @@ const { debug } = log('rest');
 export const PAGE_SIZE_HEADER = 'x-page-size';
 export const OFFSET_HEADER = 'x-offset';
 export const PATCH_HEADER = 'x-patch';
+
 const WHERE_KEY = 'where:';
 
 export function getHandler(model: MongoModel) {
@@ -51,6 +53,7 @@ export function getManyHandler(model: MongoModel) {
     const query = qs.parse(plainQuery as BaseItem);
     const pageSize = queryOrHeader(ctx, PAGE_SIZE_HEADER) || '10';
     const offset = queryOrHeader(ctx, OFFSET_HEADER);
+    const sort = queryOrHeader(ctx, SORT_HEADER)
 
     const filters = predicates.queryToFilter(query, model.schema);
 
@@ -83,6 +86,7 @@ export function getManyHandler(model: MongoModel) {
       headers: {
         ...ctx.headers,
         [PAGE_SIZE_HEADER]: pageSize,
+        [SORT_HEADER]: sort,
       },
     });
 

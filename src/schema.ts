@@ -14,6 +14,22 @@ import { mapSeries } from 'async';
 import { Timestamp } from 'mongodb';
 
 export const PAGE_SIZE_HEADER = 'x-page-size';
+export const SORT_HEADER = 'x-sort';
+
+export function parseSortHeader(sort?: string): Record<string, 1 | -1> | undefined {
+  if (!sort) return undefined;
+  const result: Record<string, 1 | -1> = {};
+  sort.split(',').forEach(field => {
+    const trimmed = field.trim();
+    if (!trimmed) return;
+    if (trimmed.startsWith('-')) {
+      result[trimmed.slice(1)] = -1;
+    } else {
+      result[trimmed] = 1;
+    }
+  });
+  return Object.keys(result).length ? result : undefined;
+}
 
 const { debug } = log('schema');
 
@@ -271,7 +287,7 @@ export default class ModelSchema<T = BaseT<BaseItem>> {
 
   async findAll(this: MongoModel<T>, filters: BaseItem, options: BaseItem = {}): Promise<BaseT<T>[]> {
 
-    const { headers: { [PAGE_SIZE_HEADER]: pageSize } = {} as BaseItem } = options;
+    const { headers: { [PAGE_SIZE_HEADER]: pageSize, [SORT_HEADER]: sortHeader } = {} as BaseItem } = options;
     const pipeline = [];
     const { schema } = this;
 
@@ -289,10 +305,18 @@ export default class ModelSchema<T = BaseT<BaseItem>> {
       _id: false,
     };
 
+    const $sort = parseSortHeader(sortHeader as string);
+
     if (schema.get('tsType') === 'timestamp') {
       $project.ts = { $toDate: { $dateToString: { date: '$ts' } } };
       $project['x-offset'] = '$ts';
-      pipeline.push({ $sort: { ts: 1 } });
+      if (!$sort) {
+        pipeline.push({ $sort: { ts: 1 } });
+      }
+    }
+
+    if ($sort) {
+      pipeline.push({ $sort });
     }
 
     pipeline.push({ $project });
