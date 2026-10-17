@@ -12,9 +12,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run build        # tsc — compiles src/*.ts to lib/ (CommonJS, ES2022)
 npm run watch        # tsc-watch for development
 npm run lint         # eslint src
+npm test             # node --test test/*.test.js, against the built lib/
 ```
 
-There are no tests configured in this project.
+Tests in `test/` need a disposable MongoDB in `MONGO_URL` (e.g. `MONGO_URL=mongodb://127.0.0.1:27017/sistemium_mongo_test npm test`) and are skipped without it. Run `npm run build` first.
 
 ## Architecture
 

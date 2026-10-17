@@ -93,7 +93,8 @@ export default class ModelSchema<T = BaseT<BaseItem>> {
     const schema = mongoSchema || new Schema(schemaConfig);
     schema.set('collection', collection);
     schema.add({
-      ts: Date,
+      // A BSON Timestamp does not cast to Date: as Date it would fail on every hydrated document
+      ts: tsType === 'timestamp' ? Schema.Types.Mixed : Date,
       id: String,
       cts: Date,
     });
@@ -106,6 +107,10 @@ export default class ModelSchema<T = BaseT<BaseItem>> {
       transform(_doc, ret) {
         delete ret._id;
         delete ret.__v;
+        if (isTimestamp(ret.ts)) {
+          // same as findAll does with $toDate
+          ret.ts = new Date(ret.ts.getHighBits() * 1000);
+        }
       },
     });
 
@@ -381,6 +386,11 @@ function $updateOne(item: BaseItem, id: string, upsert = true, patch = false) {
 
 function $currentDate(this: MongoModel) {
   return { ts: { $type: this.schema.get('tsType') } };
+}
+
+function isTimestamp(val: any): val is Timestamp {
+  // not instanceof: mongoose may load a different copy of bson
+  return lo.get(val, '_bsontype') === 'Timestamp';
 }
 
 function ifUndefined(val1: any, val2: any): any {
